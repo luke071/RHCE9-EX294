@@ -17,9 +17,7 @@ node5.lab.com - managed node
  usermod -aG wheel automation
 ```
 
-## 1.3 Passwordless SSH Configuration 
-
-Log in to your automation account on control.lab.com.
+## 1.3 Passwordless SSH Configuration on control.lab.com
 ```bash
 ssh-keygen -t rsa
 ssh-copy-id node1.lab.com
@@ -29,12 +27,19 @@ ssh-copy-id node4.lab.com
 ssh-copy-id node5.lab.com
 ```
 
-## 1.4 Creating directories and configuring Ansible
+## 1.4 Permissions for SSH files on target hosts
+```bash
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+```
+
+## 1.5 Ansible installation on control.lab.com
 ```bash
 dnf install -y epel-release
 dnf install -y ansible
 ```
-## 1.5 Creating directories and configuring Ansible
+
+Creating directories and configuring
 ```bash
 mkdir -p /home/automation/plays/roles
 mkdir -p /home/automation/plays/inventory
@@ -58,10 +63,11 @@ chown -R automation:automation /home/automation
  node1.lab.com  
  [webservers]  
  node2.lab.com  
- node3.lab.com
+ node3.lab.com  
  [database]  
  node4.lab.com  
  node5.lab.com  
+
 
  ## 1.6 Connection test
 
