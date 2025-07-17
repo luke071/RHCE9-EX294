@@ -37,12 +37,12 @@ ssh-copy-id node5.lab.com
 
 Ansible will execute the command with elevated privileges (become: true). This grants the automation user the ability to execute any commands with sudo without requiring a password on managed hosts. Add the following to the /etc/sudoers file:
 
-student ALL=(ALL) NOPASSWD: ALL
+automation ALL=(ALL) NOPASSWD: ALL
 
 ## 1.5 Ansible installation and configutation on control.lab.com
 ```bash
 dnf install ansible-core python3-pip vim -y
-su - student
+su - automation
 pip install ansible-navigator
 ```
 
@@ -56,10 +56,10 @@ chown -R automation:automation /home/automation
 /home/automation/plays/ansible.cfg
 
  [defaults]  
- inventory = /home/student/ansible/inventory  
- roles_path = /home/student/ansible/roles  
- collections_path = /home/student/ansible/mycollection  
- remote_user = student  
+ inventory = /home/automation/ansible/inventory  
+ roles_path = /home/automation/ansible/roles  
+ collections_path = /home/automation/ansible/mycollection  
+ remote_user = automation  
  host_key_checking = False  
  [privilege_escalation]  
  become = True  
@@ -84,11 +84,11 @@ Then we execute the command:
 ```bash
 ansible --version
 ```
-returns in this case "/home/student/ansible.cfg"
+returns in this case "/home/automation/ansible.cfg"
 
 We add an entry and check it:
 ```bash
-echo "export ANSIBLE_CONFIG=/home/student/ansible.cfg" >> .bashrc
+echo "export ANSIBLE_CONFIG=/home/automation/ansible.cfg" >> .bashrc
 cat .bashrc
 ```
 We add the source:
@@ -107,3 +107,41 @@ ansible all -m ping
 ```
 
 ![alt text](./assets/1-6.png)  
+
+## 2 Create and run an Ansible ad-hoc command. As a system administrator, you will need to install software on the managed node
+
+a -  Create a shell script called yum-repo.sh that runs Ansible ad-hoc commands to create the yum repositories on ech of the managed nodes as per the followind details.  
+b - NOTE: you need to create 2 repos (BaseOS & AppStream) un the managed nodes.   
+
+[BaseOS]  
+name = BaseOS  
+baseurl = file:///mnt/BaseOS/  
+description : Base OS Repo  
+gpgcheck = 1  
+enabled = 1  
+gpkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release  
+
+ 
+[AppStream]  
+name = AppStream  
+baseurl = file:///mnt/AppStream/  
+description : AppStream Repo  
+gpgcheck = 1  
+enabled = 1  
+gpkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release  
+
+```bash
+cd ansible/
+nano yum-repo.sh
+```
+#!/bin/bash  
+ansible all -m yum_repository -a 'file=external.repo name=BaseOS description="Base OS Repo" baseurl=file:///mnt/BaseOS/ gpgcheck=1 enabled=1 gpkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release state=present' -b  
+ansible all -m yum_repository -a 'file=external.repo name=AppStream description="AppStream Repo" baseurl=file:///mnt/AppStream/ gpgcheck=1 enabled=1 gpkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release state=present' -b
+
+```bash
+chmod +x yum-repo.sh
+./yum-repo.sh
+ansible all -m command -a 'dnf repolist all'
+ansible all -m command -a 'ls /etc/yum.repos.d/' -b
+```
+
