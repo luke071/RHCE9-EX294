@@ -1,6 +1,7 @@
 This repository will provide solutions to the Red Hat Certified Engineer (RHCE EX294) exam preparation tasks. Tasks will be executed using Rocky Linux 9 systems in an Oracle VirtualBox environment. 
 
-## 1.1 Preparing the environment in VirtualBox
+## Question 1 
+### 1.1 Preparing the environment in VirtualBox
 ![alt text](./assets/diagram1.png)  
 
 control.lab.com - control node (Ansible)    
@@ -15,7 +16,7 @@ cat /etc/hosts
 ```
 ![alt text](./assets/1-1.png)  
 
-## 1.2 Creating the user 'automation' on a control node and managed nodes
+### 1.2 Creating the user 'automation' on a control node and managed nodes
 
 ```bash
  useradd automation
@@ -23,7 +24,7 @@ cat /etc/hosts
  usermod -aG wheel automation
 ```
 
-## 1.3 Passwordless SSH Configuration on control.lab.com
+### 1.3 Passwordless SSH Configuration on control.lab.com
 ```bash
 ssh-keygen -t rsa
 ssh-copy-id node1.lab.com
@@ -33,13 +34,13 @@ ssh-copy-id node4.lab.com
 ssh-copy-id node5.lab.com
 ```
 
-## 1.4 Executing sudo commands without requiring a password on managed nodes
+### 1.4 Executing sudo commands without requiring a password on managed nodes
 
 Ansible will execute the command with elevated privileges (become: true). This grants the automation user the ability to execute any commands with sudo without requiring a password on managed hosts. Add the following to the /etc/sudoers file:
 
 automation ALL=(ALL) NOPASSWD: ALL
 
-## 1.5 Ansible installation and configutation on control.lab.com
+### 1.5 Ansible installation and configutation on control.lab.com
 ```bash
 dnf install ansible-core python3-pip vim -y
 su - automation
@@ -96,7 +97,7 @@ We add the source:
 source .bashrc
 ```
 
- ## 1.6 Connection test
+### 1.6 Connection test
 
 Log in to your automation account on control.lab.com. 
 
@@ -108,8 +109,8 @@ ansible all -m ping
 
 ![alt text](./assets/1-6.png)  
 
-## 2 Create and run an Ansible ad-hoc command. As a system administrator, you will need to install software on the managed node
-
+## Question 2  
+Create and run an Ansible ad-hoc command. As a system administrator, you will need to install software on the managed node.  
 a -  Create a shell script called yum-repo.sh that runs Ansible ad-hoc commands to create the yum repositories on ech of the managed nodes as per the followind details.  
 b - NOTE: you need to create 2 repos (BaseOS & AppStream) un the managed nodes.   
 
@@ -145,3 +146,43 @@ ansible all -m command -a 'dnf repolist all'
 ansible all -m command -a 'ls /etc/yum.repos.d/' -b
 ```
 
+## Question 3 
+Create a playbook called /home/automation/automation/ansible/packages.yml that:  
+- Installs the php and postgresql packages on hosts in the dev, test, and prod host groups only.  
+- Installs the RPM Development Tools package group on hosts in the dev host group only.  
+- Updates all paclages to the lates veriosn on hosts in the dev host group only.  
+
+```bash
+nano /home/automation/ansible/packages.yml
+```
+Creating a playbook:
+
+```
+--- name: Install PHP and PostgreSQL  
+  hosts: all  
+  tasks:  
+    - name: install the packages  
+      dnf:  
+       name: "{{ item }}"  
+       state: present  
+      loop:  
+       - php  
+       - postgresql  
+      when: inventory_hostname in groups['dev'] or inventory_hostname in groups ['test']or inventory_hostname in gropups['prod']  
+    - name: install the RPM development tool package group  
+      dnf:  
+       name: "@RPM Development tools"  
+       state: present  
+      when: inventory_hostbame in groups['dev']  
+    - name: update all packages  
+      dnf:  
+       name: '*'  
+       state: latest  
+      when: inventory_hostname in groups['dev']   
+```
+
+Executing playbook tasks:
+
+```bash
+ansible-playbook /home/automation/ansible/packages.yml
+```
