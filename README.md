@@ -155,11 +155,13 @@ Create a playbook called /home/automation/automation/ansible/packages.yml that:
 ```bash
 nano /home/automation/ansible/packages.yml
 ```
-Creating a playbook:
+Create a Playbook:
 
-```
---- name: Install PHP and PostgreSQL  
+```bash
+--- 
+- name: Install PHP and PostgreSQL  
   hosts: all  
+  become: true
   tasks:  
     - name: install the packages  
       dnf:  
@@ -181,8 +183,45 @@ Creating a playbook:
       when: inventory_hostname in groups['dev']   
 ```
 
-Executing playbook tasks:
+Execute the Playbook:
 
 ```bash
 ansible-playbook /home/automation/ansible/packages.yml
 ```
+
+## Question 4
+
+Install the RHEL system roles package and create a playbook called:  
+/home/automation/ansible/timesync.yml  
+1. Runs on all the managed hosts.  
+2. Uses the timesync role.  
+3. Configure the role to use the time server 0.pool.ntp.org  
+4. Configures the role to set the iburst parameter as enabled.  
+
+```bash
+dnf install rhel-system-roles -y
+nano /home/automation/ansible/timesync.yml
+```
+
+Create a Playbook:
+
+```bash
+--- 
+- name: Time Sync  
+  hosts: all  
+  become: true
+  vars:  
+    timesync_ntp_servers:
+      - hostname: 0.pool.ntp.org
+      iburst: yes  
+  roles:
+    - /usr/share/ansible/roles/rhel-system-roles.timesync
+```
+
+Execute the Playbook:
+
+```bash
+ansible-playbook /home/automation/ansible/timesync.yml
+```
+
+The iburst option in NTP involves sending eight queries to servers simultaneously during the initial synchronization.  
