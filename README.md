@@ -135,9 +135,28 @@ gpkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 cd ansible/
 nano yum-repo.sh
 ```
-#!/bin/bash  
-ansible all -m yum_repository -a 'file=external.repo name=BaseOS description="Base OS Repo" baseurl=file:///mnt/BaseOS/ gpgcheck=1 enabled=1 gpkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release state=present' -b  
-ansible all -m yum_repository -a 'file=external.repo name=AppStream description="AppStream Repo" baseurl=file:///mnt/AppStream/ gpgcheck=1 enabled=1 gpkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release state=present' -b
+
+```bash
+#!/bin/bash
+
+ANSIBLE_CONFIG=/home/automation/ansible/ansible.cfg
+
+ansible all -m copy -a "content='[BaseOS]
+name=BaseOS
+baseurl=file:///mnt/BaseOS/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+' dest=/etc/yum.repos.d/baseos.repo"
+
+ansible all -m copy -a "content='[AppStream]
+name=AppStream
+baseurl=file:///mnt/AppStream/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+' dest=/etc/yum.repos.d/appstream.repo"
+```
 
 ```bash
 chmod +x yum-repo.sh
@@ -145,6 +164,9 @@ chmod +x yum-repo.sh
 ansible all -m command -a 'dnf repolist all'
 ansible all -m command -a 'ls /etc/yum.repos.d/' -b
 ```
+Checking if repository files have been created in node1.lab.com:  
+
+![alt text](./assets/2-1.png)  
 
 ## Question 3 
 Create a playbook called /home/automation/automation/ansible/packages.yml that:  
