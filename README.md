@@ -180,29 +180,31 @@ nano /home/automation/ansible/packages.yml
 Create a Playbook:
 
 ```bash
---- 
-- name: Install PHP and PostgreSQL  
-  hosts: all  
-  become: true
-  tasks:  
-    - name: install the packages  
-      dnf:  
-       name: "{{ item }}"  
-       state: present  
-      loop:  
-       - php  
-       - postgresql  
-      when: inventory_hostname in groups['dev'] or inventory_hostname in groups ['test']or inventory_hostname in gropups['prod']  
-    - name: install the RPM development tool package group  
-      dnf:  
-       name: "@RPM Development tools"  
-       state: present  
-      when: inventory_hostbame in groups['dev']  
-    - name: update all packages  
-      dnf:  
-       name: '*'  
-       state: latest  
-      when: inventory_hostname in groups['dev']   
+---
+- name: Install PHP and PostgreSQL  on dev, test, and prod
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install php and postgresql
+      package:
+        name:
+          - php
+          - postgresql
+        state: present
+
+- name: Install RPM Development Tools and update all packages on dev
+  hosts: dev
+  become: yes
+  tasks:
+    - name: Install RPM Development Tools group
+      dnf:
+        name: "@RPM Development Tools"
+        state: present
+
+    - name: Update all packages to latest version
+      dnf:
+        name: "*"
+        state: latest
 ```
 
 Execute the Playbook:
@@ -210,6 +212,8 @@ Execute the Playbook:
 ```bash
 ansible-playbook /home/automation/ansible/packages.yml
 ```
+
+![alt text](./assets/3-1.png)  
 
 ## Question 4
 
