@@ -239,7 +239,7 @@ Create a Playbook:
   vars:  
     timesync_ntp_servers:
       - hostname: 0.pool.ntp.org
-      iburst: yes  
+        iburst: yes  
   roles:
     - /usr/share/ansible/roles/rhel-system-roles.timesync
 ```
@@ -249,5 +249,5 @@ Execute the Playbook:
 ```bash
 ansible-playbook /home/automation/ansible/timesync.yml
 ```
-
+![alt text](./assets/4-1.png)  
 The iburst option in NTP involves sending eight queries to servers simultaneously during the initial synchronization.  
