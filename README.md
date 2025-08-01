@@ -70,15 +70,19 @@ chown -R automation:automation /home/automation
 
  /home/automation/plays/inventory/hosts  
 
- [proxy]  
- node1.lab.com  
- [webservers]  
- node2.lab.com  
- node3.lab.com  
- [database]  
- node4.lab.com  
- node5.lab.com  
 
+[dev]  
+node1.lab.com  
+[test]  
+node2.lab.com  
+[prod]  
+node3.lab.com  
+node4.lab.com  
+[balancers]  
+node5.lab.com  
+[webservers:children]  
+prod  
+ 
 
 Then we execute the command:
 
@@ -177,7 +181,7 @@ Create a playbook called /home/automation/automation/ansible/packages.yml that:
 ```bash
 nano /home/automation/ansible/packages.yml
 ```
-Create a Playbook:
+Utworzenie plabooka do instalowania PHP, PostgreSQL, RPM Developlment Tools i aktualizacji:
 
 ```bash
 ---
@@ -215,6 +219,42 @@ ansible-playbook /home/automation/ansible/packages.yml
 
 ![alt text](./assets/3-1.png)  
 
+Create a Playbook that will uninstall anything previously installed:
+
+```bash
+---
+- name: Uninstall PHP and PostgreSQL from all environments
+  hosts: all
+  become: yes
+  tasks:
+    - name: Remove php and postgresql
+      package:
+        name:
+          - php
+          - postgresql
+        state: absent
+
+- name: Uninstall RPM Development Tools and revert updates on dev
+  hosts: dev
+  become: yes
+  tasks:
+    - name: Remove RPM Development Tools group
+      dnf:
+        name: "@RPM Development Tools"
+        state: absent
+
+    - name: Downgrade all packages to base version (optional)
+      shell: |
+        dnf distro-sync -y
+      args:
+        warn: false
+      register: sync_result
+
+    - name: Show downgrade result
+      debug:
+        var: sync_result.stdout_lines
+```
+
 ## Question 4
 
 Install the RHEL system roles package and create a playbook called:  
@@ -251,3 +291,43 @@ ansible-playbook /home/automation/ansible/timesync.yml
 ```
 ![alt text](./assets/4-1.png)  
 The iburst option in NTP involves sending eight queries to servers simultaneously during the initial synchronization.  
+
+Create a Playbook that will uninstall anything previously installed:
+
+```bash
+---
+- name: Revert Time Sync Configuration
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Restore default chrony.conf from package
+      copy:
+        src: /usr/share/chrony/chrony.conf.rpmnew
+        dest: /etc/chrony.conf
+        remote_src: yes
+      when: ansible_facts['distribution'] == "Rocky"
+
+    - name: Ensure chronyd is enabled and running
+      systemd:
+        name: chronyd
+        state: started
+        enabled: yes
+
+    - name: Remove custom timesync configuration file (if created by role)
+      file:
+        path: /etc/timesyncd.conf
+        state: absent
+
+    - name: Remove override timesync settings (if any)
+      file:
+        path: /etc/systemd/timesyncd.conf
+        state: absent
+
+    - name: Disable systemd-timesyncd if enabled
+      systemd:
+        name: systemd-timesyncd
+        state: stopped
+        enabled: no
+        masked: yes
+```
