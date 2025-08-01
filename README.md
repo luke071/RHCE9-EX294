@@ -331,3 +331,148 @@ Create a Playbook that will uninstall anything previously installed:
         enabled: no
         masked: yes
 ```
+
+## Question 5
+
+Create a role called apache in /home/automation/ansible/roles with the following requirem.  
+5.1 The httpd package should be installed, httpd service should be enabled on boot, and started.  
+5.2 The firewall is enabled and running with a rule to allow access to the web server.  
+5.3 A template file index.html.j2 exists (you have to create this file) and is used  
+/var/www/html/index.html with the following output: Welcome to HOSTNAME  
+hostname is the fully qualified domain name of the managed node and ip address the managed node.  
+5.4 Create a playbook called /home/automation/ansible/apache-role.yml that uses this role a (illegible) The playbook runs on hosts in the webservers host group.  
+
+
+```bash
+mkdir -p /home/automation/ansible/roles/apache/{tasks,templates,files,defaults,vars}
+```
+Creating an Apache role:  
+```bash
+nano /home/automation/ansible/roles/apache/tasks/main.yml
+```
+
+```yaml
+---
+- name: Install httpd package
+  package:
+    name: httpd
+    state: present
+
+- name: Enable and start httpd service
+  systemd:
+    name: httpd
+    enabled: yes
+    state: started
+
+- name: Allow HTTP through the firewall
+  firewalld:
+    service: http
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Create index.html using template
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: apache
+    group: apache
+    mode: '0644'
+```
+
+Creating the index.html.j2 template file:  
+
+```bash
+nano /home/automation/ansible/roles/apache/templates/index.html.j2
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to {{ ansible_fqdn }}</title>
+</head>
+<body>
+    <h1>Welcome to {{ ansible_fqdn }}</h1>
+    <p>IP Address: {{ ansible_default_ipv4.address }}</p>
+</body>
+</html>
+```
+Creating the apache-role.yml playbook:  
+
+```bash
+nano /home/automation/ansible/apache-role.yml
+```
+
+```yaml
+---
+- name: Configure Apache on Web Servers
+  hosts: webservers
+  become: yes
+  roles:
+    - apache
+```
+Launching the playbook:  
+```bash
+ANSIBLE_CONFIG=/home/automation/ansible/ansible.cfg ansible-playbook /home/automation/ansible/apache-role.yml
+```
+
+![alt text](./assets/5-1.png)  
+
+```bash
+ssh node2.lab.com cat /var/www/html/index.html
+```
+![alt text](./assets/5-2.png)  
+Browser access check:
+![alt text](./assets/5-3.png)  
+
+## Question 6
+
+Use Ansible Galaxy with the requirements file called /home/automation/ansible/roles/requirements.yml to download and install roles to /home/admin/ansible/roles from the following URLs:
+
+Purpose of the task:  
+1. Install the Zabbix role under the name zabbix from the URL:  
+https://galaxy.ansible.com/download/zabbix-zabbix-1.0.6.tar.gz  
+2. Install the OpenAFS role under the name security from the URL:  
+https://galaxy.ansible.com/download/openafs_contrib-openafs-1.9.0.tar.gz  
+3. Install the Squid role with the name squid from the URL:  
+https://galaxy.ansible.com/download/mafalb-squid-0.2.0.tar.gz  
+
+```bash
+mkdir -p /home/admin/ansible/roles
+```
+Creating a requirements.yml file:  
+```bash
+nano /home/automation/ansible/roles/requirements.yml
+```
+```yaml
+---
+- name: zabbix
+  src: https://galaxy.ansible.com/download/zabbix-zabbix-1.0.6.tar.gz
+  version: 1.0.6
+
+- name: security
+  src: https://galaxy.ansible.com/download/openafs_contrib-openafs-1.9.0.tar.gz
+  version: 1.9.0
+
+- name: squid
+  src: https://galaxy.ansible.com/download/mafalb-squid-0.2.0.tar.gz
+  version: 0.2.0
+```
+
+Installing roles using Ansible Galaxy:  
+
+```bash
+ansible-galaxy install -r /home/automation/ansible/roles/requirements.yml -p /home/admin/ansible/roles
+```
+
+![alt text](./assets/6-1.png) 
+
+Checking if roles have been installed:  
+```bash
+ls /home/admin/ansible/roles
+```
+![alt text](./assets/6-2.png) 
