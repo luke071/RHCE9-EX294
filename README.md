@@ -73,13 +73,17 @@ chown -R automation:automation /home/automation
 
 [dev]  
 node1.lab.com  
+
 [test]  
 node2.lab.com  
+
 [prod]  
 node3.lab.com  
 node4.lab.com  
 [balancers]  
+
 node5.lab.com  
+
 [webservers:children]  
 prod  
  
@@ -181,7 +185,7 @@ Create a playbook called /home/automation/automation/ansible/packages.yml that:
 ```bash
 nano /home/automation/ansible/packages.yml
 ```
-Utworzenie plabooka do instalowania PHP, PostgreSQL, RPM Developlment Tools i aktualizacji:
+Create a playbook for installing PHP, PostgreSQL, RPM Development Tools and updating:
 
 ```bash
 ---
@@ -504,4 +508,62 @@ Verifying that the Squid role has been installed and is running correctly:
 ```bash
 ssh node5.lab.com systemctl status squid
 ```
-![alt text](./assets/7-2.png) 
+![alt text](./assets/7-2.png)  
+
+## Question 8
+
+Create a playbook called test.yml as per the following details:   
+8.1 The playbook runs on managed nodes in the test host group.  
+8.2 Create the directory /webtest with the group ownership webtest group and permissions rwx for the owner and group and rx for the others.  
+8.3 Apply the special permissions: set group ID  
+8.4 Symbolically link /var/www/html/webtest to /webtest directory.  
+8.5 Create the file /webtest/index.html with a single line of text that reads: Test  
+
+Creating a playbook that will perform operations on hosts from the test group.  
+```bash
+nano /home/automation/ansible/test.yml
+```
+```yml
+---
+- name: Configure /webtest directory and symbolic link
+  hosts: test
+  become: true
+  tasks:
+    - name: Create group webtest
+      group:
+        name: webtest
+        state: present
+
+    - name: Create /webtest directory with correct permissions
+      file:
+        path: /webtest
+        state: directory
+        owner: root
+        group: webtest
+        mode: '2775'  # rwxr-sr-x
+
+    - name: Create symbolic link /var/www/html/webtest -> /webtest
+      file:
+        src: /webtest
+        dest: /var/www/html/webtest
+        state: link
+
+    - name: Create index.html with content "Test"
+      copy:
+        dest: /webtest/index.html
+        content: "Test\n"
+        owner: root
+        group: webtest
+        mode: '0664'
+```
+Running the playbook:  
+```bash
+ansible-playbook /home/automation/ansible/test.yml
+```
+![alt text](./assets/8-1.png)  
+Checking if the task was executed on host node2.lab.com:  
+
+```bash
+ls -ld /webtest
+```
+![alt text](./assets/8-2.png)  
