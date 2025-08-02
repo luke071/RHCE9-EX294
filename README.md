@@ -567,3 +567,37 @@ Checking if the task was executed on host node2.lab.com:
 ls -ld /webtest
 ```
 ![alt text](./assets/8-2.png)  
+
+## Question 9
+
+Create an Ansible vault to store user passwords with the following conditions:  
+9.1 The name of the vault is vault.yml  
+9.2 The vault contains two variables, dev pass with value as redhat and mgr_pass with value as secretpassword.  
+9.3 The password to encrypt and decrypt the vault is labs  
+9.4 The password is stored in the file /home/automation/ansible/password.txt
+
+Create a Vault password file:  
+```bash
+echo "labs" > /home/automation/ansible/password.txt
+chmod 600 /home/automation/ansible/password.txt
+```
+Create an encrypted vault.yml file:  
+```bash
+ansible-vault create /home/automation/ansible/vault.yml --vault-password-file /home/automation/ansible/password.txt
+```
+In the editor, type and save:  
+```yaml
+dev_pass: redhat
+mgr_pass: secretpassword
+```
+Checking if a file is encrypted:  
+```bash
+head /home/automation/ansible/vault.yml
+```
+![alt text](./assets/9-1.png)  
+Decrypt and display contents:
+```bash
+ansible-vault view /home/automation/ansible/vault.yml --vault-password-file /home/automation/ansible/password.txt
+```
+
+![alt text](./assets/9-2.png)  
