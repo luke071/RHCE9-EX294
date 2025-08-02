@@ -415,7 +415,7 @@ nano /home/automation/ansible/apache-role.yml
   roles:
     - apache
 ```
-Launching the playbook:  
+Running the playbook:  
 ```bash
 ANSIBLE_CONFIG=/home/automation/ansible/ansible.cfg ansible-playbook /home/automation/ansible/apache-role.yml
 ```
@@ -476,3 +476,32 @@ Checking if roles have been installed:
 ls /home/admin/ansible/roles
 ```
 ![alt text](./assets/6-2.png) 
+
+## Question 7
+
+Create a playbook called balancer-squid.yml. The playbook contains a play that runs on hosts in the balancers host group and uses the squid role present in your machine.  
+```bash
+nano /home/automation/ansible/balancer-squid.yml
+```
+
+Create a playbook that uses the squid role:
+```yaml
+---
+- name: Configure Squid on balancers
+  hosts: balancers
+  become: yes
+  roles:
+    - squid
+```
+Running the playbook:
+
+```bash
+ansible-playbook /home/automation/ansible/balancer-squid.yml
+```
+![alt text](./assets/7-1.png) 
+
+Verifying that the Squid role has been installed and is running correctly:  
+```bash
+ssh node5.lab.com systemctl status squid
+```
+![alt text](./assets/7-2.png) 
