@@ -47,30 +47,40 @@ su - automation
 pip install ansible-navigator
 ```
 
-Creating directories and configuring
+Create a standard project structure:
 ```bash
-mkdir -p /home/automation/ansible/mycollection
-mkdir -p /home/automation/ansible/roles
+mkdir -p ~/ansible/{inventory,playbooks,roles}
+ls -ld /home/automation
 chown -R automation:automation /home/automation
 ```
+Project structure:
+```bash
+/home/automation/ansible/
+├── inventory/
+├── playbooks/
+├── roles/
+└── ansible.cfg
+```
 
-/home/automation/plays/ansible.cfg
+ansible/ansible.cfg
 
- [defaults]  
- inventory = /home/automation/ansible/inventory  
- roles_path = /home/automation/ansible/roles  
- collections_path = /home/automation/ansible/mycollection  
+```cfg
+ [defaults]
+ inventory = ./inventory
+ roles_path = ./roles
+ collections_path = ./mycollection
  remote_user = automation  
  host_key_checking = False  
  [privilege_escalation]  
  become = True  
  become_method = sudo  
  become_user = root  
- become_ask_pass = false  
+ become_ask_pass = false 
+```
 
- /home/automation/plays/inventory/hosts  
+ansible/inventory/hosts:  
 
-
+```host
 [dev]  
 node1.lab.com  
 
@@ -85,32 +95,16 @@ node4.lab.com
 node5.lab.com  
 
 [webservers:children]  
-prod  
- 
-
-Then we execute the command:
-
-```bash
-ansible --version
+prod 
 ```
-returns in this case "/home/automation/ansible.cfg"
 
-We add an entry and check it:
-```bash
-echo "export ANSIBLE_CONFIG=/home/automation/ansible.cfg" >> .bashrc
-cat .bashrc
-```
-We add the source:
-```bash
-source .bashrc
-```
 
 ### 1.6 Connection test
 
 Log in to your automation account on control.lab.com. 
 
+cd /home/automation/ansible
 ```bash
-cd /home/automation/plays
 ansible all --list-hosts
 ansible all -m ping
 ```
