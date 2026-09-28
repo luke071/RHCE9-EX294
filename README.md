@@ -1,6 +1,6 @@
 This repository will provide solutions to the Red Hat Certified Engineer (RHCE EX294) exam preparation tasks. Tasks will be executed using Rocky Linux 9 systems in an Oracle VirtualBox environment. 
 
-## Question 1 
+## Question 1 — Ansible Configuration and Inventory
 ### 1.1 Preparing the environment in VirtualBox
 ![alt text](./assets/diagram1.png)  
 
@@ -111,7 +111,7 @@ ansible all -m ping
 
 ![alt text](./assets/1-6.png)  
 
-## Question 2  
+## Question 2 - Package Repositories and Packages
 Create and run an Ansible ad-hoc command. As a system administrator, you will need to install software on the managed node.  
 a -  Create a shell script called yum-repo.sh that runs Ansible ad-hoc commands to create the yum repositories on ech of the managed nodes as per the followind details.  
 b - NOTE: you need to create 2 repos (BaseOS & AppStream) un the managed nodes.   
@@ -170,7 +170,7 @@ Checking if repository files have been created in node1.lab.com:
 
 ![alt text](./assets/2-1.png)  
 
-## Question 3 
+## Question 3 — Package Management
 Create a playbook called /home/automation/automation/ansible/packages.yml that:  
 - Installs the php and postgresql packages on hosts in the dev, test, and prod host groups only.  
 - Installs the RPM Development Tools package group on hosts in the dev host group only.  
@@ -253,7 +253,7 @@ Create a Playbook that will uninstall anything previously installed:
         var: sync_result.stdout_lines
 ```
 
-## Question 4
+## Question 4 - System Configuration with Ansible Roles
 
 Install the RHEL system roles package and create a playbook called:  
 /home/automation/ansible/timesync.yml  
@@ -330,7 +330,7 @@ Create a Playbook that will uninstall anything previously installed:
         masked: yes
 ```
 
-## Question 5
+## Question 5 - Firewall and Web Server Configuration
 
 Create a role called apache in /home/automation/ansible/roles with the following requirem.  
 5.1 The httpd package should be installed, httpd service should be enabled on boot, and started.  
@@ -427,7 +427,7 @@ ssh node2.lab.com cat /var/www/html/index.html
 Browser access check:
 ![alt text](./assets/5-3.png)  
 
-## Question 6
+## Question 6 - Ansible Galaxy Roles
 
 Use Ansible Galaxy with the requirements file called /home/automation/ansible/roles/requirements.yml to download and install roles to /home/admin/ansible/roles from the following URLs:
 
@@ -475,7 +475,7 @@ ls /home/admin/ansible/roles
 ```
 ![alt text](./assets/6-2.png) 
 
-## Question 7
+## Question 7 - Using Ansible Galaxy Roles
 
 Create a playbook called balancer-squid.yml. The playbook contains a play that runs on hosts in the balancers host group and uses the squid role present in your machine.  
 ```bash
@@ -504,7 +504,7 @@ ssh node5.lab.com systemctl status squid
 ```
 ![alt text](./assets/7-2.png)  
 
-## Question 8
+## Question 8 - Files, Permissions and Links
 
 Create a playbook called test.yml as per the following details:   
 8.1 The playbook runs on managed nodes in the test host group.  
@@ -562,7 +562,7 @@ ls -ld /webtest
 ```
 ![alt text](./assets/8-2.png)  
 
-## Question 9
+## Question 9 - Ansible Vault
 
 Create an Ansible vault to store user passwords with the following conditions:  
 9.1 The name of the vault is vault.yml  
@@ -595,3 +595,326 @@ ansible-vault view /home/automation/ansible/vault.yml --vault-password-file /hom
 ```
 
 ![alt text](./assets/9-2.png)  
+
+## Question 10 — User and SSH Management
+
+
+Create a playbook at:
+```bash
+/home/automation/ansible/users.yml
+```
+The playbook must configure all managed hosts as follows:
+
+- A group named developers must exist.
+
+- The following users must exist:
+
+  - developer1
+
+  - developer2
+
+- Both users must use /bin/bash as their login shell.
+
+- Both users must be members of the developers group.
+
+- developer1 must have the SSH public key stored in:
+```bash
+/home/automation/ansible/files/developer1.pub
+```
+- developer1 must be able to execute /usr/bin/systemctl with elevated privileges without being prompted for a password.
+
+- developer2 must not receive any additional administrative privileges.
+
+- User and group names must be defined as variables rather than repeated throughout the playbook.
+
+The configuration must remain correct when the playbook is executed multiple times.
+
+
+## Question 11 - System Configuration
+Create a playbook at:
+```bash
+/home/automation/ansible/system_config.yml
+```
+Configure all managed hosts.
+
+A file named:
+```bash
+/etc/automation.conf
+```
+must be present on every managed host.
+
+Its contents must include:
+
+- the hostname of the managed host,
+
+- the total amount of memory,
+
+- the operating system family,
+
+- the IPv4 address of the default network interface.
+
+Hosts with less than 2 GB of RAM must not receive this configuration.
+
+Hosts belonging to the prod inventory group must contain:
+
+environment=production
+
+All other hosts must contain:
+
+environment=non-production
+
+The configuration must automatically reflect changes to the managed host's system information.
+
+The playbook must not use shell or command tasks to obtain the requested system information.
+
+## Question 12 - Web Application Deployment
+Create a playbook at:
+```bash
+/home/automation/ansible/webserver.yml
+```
+The playbook must configure all hosts in the webservers group.
+
+The following software must be available:
+
+- Apache HTTP Server
+
+- PHP
+
+- PHP-FPM
+
+The Apache web server must:
+
+- be configured to start automatically after reboot,
+
+- be running,
+
+- listen on TCP port 8080,
+
+- be reachable through the host firewall on port 8080.
+
+Create a web page at:
+```bash
+/var/www/html/index.php
+```
+The page must display:
+
+- the hostname of the server,
+
+- its primary IPv4 address,
+
+- the operating system name.
+
+The configuration must be maintained by Ansible.
+
+If the Apache configuration changes, the web service must be restarted automatically.
+
+The playbook should avoid unnecessary changes when executed repeatedly.
+
+## Question 13 - Storage Configuration
+Create a playbook at:
+```bash
+/home/automation/ansible/storage.yml
+```
+The configuration applies only to hosts in the prod group.
+
+A new storage area must be available at:
+
+/data
+
+Requirements:
+
+- the storage area must have a size of 2 GB,
+
+- it must use the XFS filesystem,
+
+- it must be mounted automatically after reboot,
+
+- the mount point must be created if necessary,
+
+- /data/backups must exist,
+
+- /data/backups must belong to root:root,
+
+- /data/backups must have permissions 0750.
+
+The existing data on the host must not be unnecessarily destroyed or reformatted when the playbook is executed again.
+
+The resulting configuration must be persistent across reboots.
+## Question 14 - Secure Application Configuration
+Create a playbook at:
+```bash
+/home/automation/ansible/app.yml
+```
+Hosts in the prod group require the following application configuration:
+```bash
+/etc/myapp/app.conf
+```
+The application requires:
+
+- database username: appuser
+
+- database password: SuperSecretPassword
+
+The database password is considered sensitive information.
+
+Requirements:
+
+- sensitive information must not be stored in plain text inside the playbook,
+
+- the application configuration must be generated from variables,
+
+- /etc/myapp/app.conf must belong to root:root,
+
+- permissions must be 0600,
+
+- the application service must be restarted when its configuration changes,
+
+- the playbook must be executable using a separate password file,
+
+- the sensitive value must remain encrypted at rest.
+
+The password must not be visible in the resulting playbook files or templates in plain text.
+
+## Question 15 - Reliable Application Deployment
+Create a playbook at:
+```bash
+/home/automation/ansible/deployment.yml
+```
+An application archive is available on the control node at:
+```bash
+/home/automation/ansible/files/application.tar.gz
+```
+Deploy the application to all managed hosts.
+
+Requirements:
+
+- the application must be placed under /opt/application,
+
+- the archive must be transferred from the control node,
+
+- the application must be extracted,
+
+- after extraction the file
+
+/opt/application/app/start.sh
+
+must exist.
+
+If the deployment cannot be completed successfully:
+
+- the incomplete deployment must be removed,
+
+- an appropriate error message must be displayed,
+
+- processing of other managed hosts must continue.
+
+Regardless of whether deployment succeeds or fails, temporary deployment files must be handled appropriately.
+
+When deployment succeeds, create:
+```bash
+/opt/application/DEPLOYED
+```
+The file must contain the hostname of the managed host.
+
+Running the playbook again must not unnecessarily redeploy an already correct application.
+
+## Question 16 - Reusable Web Application Configuration
+Create a reusable Ansible component that configures a web server.
+
+The component must provide the following functionality:
+
+- install the required web server software,
+
+- install PHP,
+
+- configure the web server,
+
+- enable the web service,
+
+- ensure that the service is running,
+
+- configure the firewall to allow HTTP traffic,
+
+- deploy a web page to the default document root.
+
+The web page must display:
+
+- the hostname,
+
+- the primary IPv4 address,
+
+- the operating system.
+
+The following values must be configurable without modifying the implementation:
+
+- web server package name,
+
+- service name,
+
+- document root.
+
+A change to the web server configuration must result in the service being restarted.
+
+The reusable component must be used from:
+```bash
+/home/automation/ansible/webapp.yml
+```
+The implementation must follow standard Ansible project conventions and must be usable on more than one host.
+
+Execute the playbook against the webservers group and verify that the web service is available.
+
+## Question 17 - Scheduled System Maintenance
+Create a playbook at:
+```bash
+/home/automation/ansible/maintenance.yml
+```
+All managed hosts must perform the following maintenance task every day at 02:30:
+
+Create or update:
+```bash
+/var/log/automation/maintenance.log
+```
+The file must contain:
+
+- the hostname of the managed host,
+
+- the date and time when the maintenance task was configured,
+
+- the text Maintenance completed.
+
+The directory /var/log/automation must exist with permissions 0750.
+
+The maintenance task must execute automatically after a reboot without requiring manual intervention.
+
+The configuration must be managed by Ansible and must not create duplicate scheduled jobs when the playbook is executed repeatedly.
+
+The playbook must not use shell or command to configure the scheduled task.
+
+## Question 18 - Multi-Host Application Configuration
+Create a playbook at:
+```bash
+/home/automation/ansible/multi_host.yml
+```
+The inventory contains two groups:
+
+- webservers
+
+- dbservers
+
+At least one host belongs to each group.
+
+The following configuration must be created on every host in webservers:
+
+/etc/myapp/database.conf
+
+The file must contain the hostname and IPv4 address of a database server from the dbservers group.
+
+The configuration must always reference an active database host from the inventory.
+
+If the inventory contains multiple database servers, the same database server must be selected consistently during one execution of the playbook.
+
+No database configuration file should be created on hosts belonging only to dbservers.
+
+The playbook must work correctly regardless of the number of hosts in either group.
+
+The resulting configuration must be generated automatically from information available in the inventory and from the managed hosts.
